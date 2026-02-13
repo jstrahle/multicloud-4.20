@@ -36,12 +36,12 @@ clusterGroup:
   #   - '/overrides/values-{{ $.Values.global.hubClusterDomain }}.yaml'
   #   - '/overrides/values-{{ $.Values.global.localClusterDomain }}.yaml'
   applications:
-    acm:
-      name: acm
-      namespace: open-cluster-management
-      argoProject: hub
-      chart: acm
-      chartVersion: 0.1.*
+ #   acm:
+ #     name: acm
+ #     namespace: open-cluster-management
+ #     argoProject: hub
+ #     chart: acm
+ #     chartVersion: 0.1.*
     hello-world:
       name: hello-world
       namespace: hello-world
