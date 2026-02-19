@@ -10,17 +10,6 @@ clusterGroup:
       namespace: open-cluster-management
       channel: release-2.14
       # csv: advanced-cluster-management.v2.6.1
-  argocd:
-    resourceExclusions: |
-      - apiGroups:
-        - policy.open-cluster-management.io
-        kinds:
-        - Policy
-        namespaces:
-        - local-cluster
-        - devcluster
-        clusters:
-        - "*"
   argoProjects:
     - hub
     - config-demo
@@ -58,20 +47,6 @@ clusterGroup:
       namespace: hello-world
       argoProject: hello-world
       path: charts/all/hello-world
-  imperative:
-    # NOTE: We *must* use lists and not hashes. As hashes lose ordering once parsed by helm
-    # The default schedule is every 10 minutes: imperative.schedule
-    # Total timeout of all jobs is 1h: imperative.activeDeadlineSeconds
-    # imagePullPolicy is set to always: imperative.imagePullPolicy
-    # For additional overrides that apply to the jobs, please refer to
-    # https://validatedpatterns.io/patterns/multicloud-gitops/mcg-imperative-actions/
-    jobs:
-      - name: hello-world
-        # ansible playbook to be run
-        playbook: rhvp.cluster_utils.hello_world
-        # per playbook timeout in seconds
-        timeout: 234
-        # verbosity: "-v"
   managedClusterGroups:
     exampleRegion:
       name: group-one
