@@ -2,13 +2,13 @@ clusterGroup:
   name: hub
   # Namespace is a dictionary for easier overriding (lists are supported as well)
   namespaces:
- #   open-cluster-management:
+    open-cluster-management:
     hello-world:
   subscriptions:
- #   acm:
- #     name: advanced-cluster-management
- #     namespace: open-cluster-management
- #     channel: release-2.14
+    acm:
+      name: advanced-cluster-management
+      namespace: open-cluster-management
+      channel: release-2.14
       # csv: advanced-cluster-management.v2.6.1
   argoProjects:
     - hub
@@ -36,12 +36,12 @@ clusterGroup:
   #   - '/overrides/values-{{ $.Values.global.hubClusterDomain }}.yaml'
   #   - '/overrides/values-{{ $.Values.global.localClusterDomain }}.yaml'
   applications:
- #   acm:
- #     name: acm
- #     namespace: open-cluster-management
- #     argoProject: hub
- #     chart: acm
- #     chartVersion: 0.1.*
+    acm:
+      name: acm
+      namespace: open-cluster-management
+      argoProject: hub
+      chart: acm
+      chartVersion: 0.1.*
     hello-world:
       name: hello-world
       namespace: hello-world
