@@ -7,17 +7,6 @@ clusterGroup:
     golang-external-secrets:
   # The only subscription on spokes is gitops which gets managed by ACM
   # subscriptions:
-  argocd:
-    resourceExclusions: |
-      - apiGroups:
-        - policy.open-cluster-management.io
-        kinds:
-        - Policy
-        namespaces:
-        - local-cluster
-        - devcluster
-        clusters:
-        - "*"
   argoProjects:
     - eso
     - config-demo
