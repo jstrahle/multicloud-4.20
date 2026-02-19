@@ -10,6 +10,17 @@ clusterGroup:
       namespace: open-cluster-management
       channel: release-2.14
       # csv: advanced-cluster-management.v2.6.1
+  argocd:
+    resourceExclusions: |
+      - apiGroups:
+        - policy.open-cluster-management.io
+        kinds:
+        - Policy
+        namespaces:
+        - local-cluster
+        - devcluster
+        clusters:
+        - "*"
   argoProjects:
     - hub
     - config-demo
