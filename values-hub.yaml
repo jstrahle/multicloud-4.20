@@ -10,22 +10,6 @@ clusterGroup:
       namespace: open-cluster-management
       channel: release-2.14
       # csv: advanced-cluster-management.v2.6.1
-  argoCD:
-    resourceExclusions: |
-      - apiGroups:
-        - tekton.dev
-        kinds:
-        - TaskRun
-        - PipelineRun
-      - apiGroups:
-        - policy.open-cluster-management.io
-        kinds:
-        - Policy
-        namespaces:
-        - local-cluster
-        - devcluster
-        clusters:
-        - "*"
   argoProjects:
     - hub
     - config-demo
