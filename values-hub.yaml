@@ -4,6 +4,7 @@ clusterGroup:
   isHubCluster: true
   namespaces:
     - open-cluster-management
+    - ack-system
     - hello-world
     - openshift-opentelemetry-operator:
         operatorGroup: true
@@ -14,6 +15,22 @@ clusterGroup:
       namespace: open-cluster-management
       channel: release-2.14
       # csv: advanced-cluster-management.v2.6.1
+    s3:
+      channel: alpha
+      installPlanApproval: Automatic
+      namespace: ack-system
+      name: ack-s3-controller
+      source: community-operators
+      sourceNamespace: openshift-marketplace
+      startingCSV: ack-s3-controller.v1.0.33
+    opentelemetry:   #tip: manually install first, and then search "sub" and find the data in yaml
+      channel: stable
+      installPlanApproval: Automatic
+      name: opentelemetry-product
+      namespace: openshift-opentelemetry-operator
+      source: redhat-operators
+      sourceNamespace: openshift-marketplace
+      startingCSV: opentelemetry-operator.v0.127.0-1
   argoProjects:
     - hub
     - config-demo
@@ -51,14 +68,6 @@ clusterGroup:
       namespace: hello-world
       argoProject: hello-world
       path: charts/all/hello-world
-    opentelemetry:   #tip: manually install first, and then search "sub" and find the data in yaml
-      channel: stable
-      installPlanApproval: Automatic
-      name: opentelemetry-product
-      namespace: openshift-opentelemetry-operator
-      source: redhat-operators
-      sourceNamespace: openshift-marketplace
-      startingCSV: opentelemetry-operator.v0.127.0-1
   managedClusterGroups:
     exampleRegion:
       name: group-one
