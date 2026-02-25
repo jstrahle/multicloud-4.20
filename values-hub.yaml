@@ -1,28 +1,32 @@
 clusterGroup:
-  name: hub
-  # Namespace is a dictionary for easier overriding (lists are supported as well)
+  name: hub      #  namespace bliver til validated Pattern navn  + dette navn  -->   ose-gitops-hub namespace  som er dette clusters apps ex propropro mm    (  openshift-gitops namespace indeholder ose-gitops-hub argo app)
   isHubCluster: true
   namespaces:
-    - open-cluster-management
     - ack-system
+    - open-cluster-management
     - hello-world
     - openshift-opentelemetry-operator:
         operatorGroup: true
         targetNamespaces:
+    - openshift-adp:
+        operatorGroup: true
+        targetNamespaces:
+          - openshift-adp
+    - openshift-logging:
+        operatorGroup: true
+        targetNamespaces:
+
+  # Ways to  find subscription names :
+  # You can install the operator from the console and then check the subscription/csv of it to determine the correct values
+  # You can search for the operator name with the command (in this example I'm search for operator with the name efs in it's name):
+  #    oc get packagemanifests -o custom-columns=NAME:.metadata.name | grep efs
+  #    and then find the other values with the command oc get packagemanifests aws-efs-csi-driver-operator -o yaml
   subscriptions:
     acm:
       name: advanced-cluster-management
       namespace: open-cluster-management
-      channel: release-2.14
-      # csv: advanced-cluster-management.v2.6.1
-    s3:
-      channel: alpha
-      installPlanApproval: Automatic
-      namespace: ack-system
-      name: ack-s3-controller
-      source: community-operators
-      sourceNamespace: openshift-marketplace
-      startingCSV: ack-s3-controller.v1.0.33
+      channel: release-2.13
+      #csv: advanced-cluster-management.v2.6.1
     opentelemetry:   #tip: manually install first, and then search "sub" and find the data in yaml
       channel: stable
       installPlanApproval: Automatic
@@ -31,15 +35,53 @@ clusterGroup:
       source: redhat-operators
       sourceNamespace: openshift-marketplace
       startingCSV: opentelemetry-operator.v0.127.0-1
-  argoProjects:
+    oadp:
+      name: redhat-oadp-operator
+      namespace: openshift-adp
+      source: redhat-operators
+      sourceNamespace: openshift-marketplace
+      channel: stable
+      startingCSV: oadp-operator.v1.5.4
+    s3:
+      channel: alpha
+      installPlanApproval: Automatic
+      namespace: ack-system
+      name: ack-s3-controller
+      source: community-operators
+      sourceNamespace: openshift-marketplace
+      startingCSV: ack-s3-controller.v1.0.33
+    logging:
+      channel: stable-6.4
+      installPlanApproval: Automatic
+      namespace: openshift-logging
+      name: cluster-logging
+      source: redhat-operators
+      sourceNamespace: openshift-marketplace
+      startingCSV: cluster-logging.v6.4.2
+  #argoCD:
+  #  resourceExclusions: |
+  #    - apiGroups:
+  #      - tekton.dev
+  #      kinds:
+  #      - TaskRun
+  #      - PipelineRun
+  #    - apiGroups:
+  #      - policy.open-cluster-management.io
+  #      kinds:
+  #      - Policy
+  #      namespaces:
+  #      - bd-ose-microservices-p1
+  #      clusters:
+  #      - "*"
+
+  projects:
     - hub
-    - config-demo
     - hello-world
+    - management-p1
   # Explicitly mention the cluster-state based overrides we plan to use for this pattern.
   # We can use self-referential variables because the chart calls the tpl function with these variables defined
   sharedValueFiles:
     - '/overrides/values-{{ $.Values.global.clusterPlatform }}.yaml'
-    - '/overrides/values-{{ $.Values.global.clusterVersion }}-{{ $.Values.clusterGroup.name }}.yaml'
   # sharedValueFiles is a flexible mechanism that will add the listed valuefiles to every app defined in the
   # applications section. We intend this to supplement and possibly even replace previous "magic" mechanisms, though
   # we do not at present have a target date for removal.
@@ -60,28 +102,69 @@ clusterGroup:
     acm:
       name: acm
       namespace: open-cluster-management
-      argoProject: hub
-      chart: acm
+      project: hub
+      chart: acm          #   https://charts.validatedpatterns.io/acm
       chartVersion: 0.1.*
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: false
+      ignoreDifferences:
+        - group: internal.open-cluster-management.io
+          kind: ManagedClusterInfo
+          jsonPointers:
+            - /spec/loggingCA
+
+  #
+    general-configs:
+      project: hub
+      name: general-configs
+      kustomize: true
+      path: charts/hub/general-configs/base
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: false
+
     hello-world:
       name: hello-world
       namespace: hello-world
-      argoProject: hello-world
+      project: hello-world
       path: charts/all/hello-world
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: false
+
+  #imperative:
+    # NOTE: We *must* use lists and not hashes. As hashes lose ordering once parsed by helm
+    # The default schedule is every 10 minutes: imperative.schedule
+    # Total timeout of all jobs is 1h: imperative.activeDeadlineSeconds
+    # imagePullPolicy is set to always: imperative.imagePullPolicy
+    # For additional overrides that apply to the jobs, please refer to
+    # https://hybrid-cloud-patterns.io/imperative-actions/#additional-job-customizations
+    #jobs:
+    #  - name: hello-world
+    #    # ansible playbook to be run
+    #    playbook: rhvp.cluster_utils.hello_world
+    #    # per playbook timeout in seconds
+    #    timeout: 234
+        # verbosity: "-v"
   managedClusterGroups:
-    exampleRegion:
-      name: group-one
+    microserv-p1:
+      name: microserv-p1
       acmlabels:
         - name: clusterGroup
-          value: group-one
-      # helmOverrides:
-      #   - name: foo
-      #     value: bar
+          value: microserv-p1
+      helmOverrides:
+        - name: clusterGroup.isHubCluster
+          value: false
+
           # Before enabling cluster provisioning, ensure AWS and/or Azure
           #   credentials and OCP pull secrets are defined in Vault.
           #   See values-secret.yaml.template
           #
-          # clusterPools:
+          #clusterPools:
           #  exampleAWSPool:
           #    name: aws-ap
           #    openshiftVersion: 4.10.18
@@ -144,8 +227,8 @@ clusterGroup:
 #      targetRevision: main
 #      path: applications/factory
 #      helmOverrides:
-#      - name: foo
-#        value: bar
+#      - name: site.isHubCluster
+#        value: false
 #      clusterSelector:
 #        matchExpressions:
 #        - key: vendor
