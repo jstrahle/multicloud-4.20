@@ -1,9 +1,13 @@
 clusterGroup:
   name: hub
   # Namespace is a dictionary for easier overriding (lists are supported as well)
+  isHubCluster: true
   namespaces:
-    open-cluster-management:
-    hello-world:
+    - open-cluster-management
+    - hello-world
+    - openshift-opentelemetry-operator:
+        operatorGroup: true
+        targetNamespaces:
   subscriptions:
     acm:
       name: advanced-cluster-management
@@ -47,6 +51,14 @@ clusterGroup:
       namespace: hello-world
       argoProject: hello-world
       path: charts/all/hello-world
+    opentelemetry:   #tip: manually install first, and then search "sub" and find the data in yaml
+      channel: stable
+      installPlanApproval: Automatic
+      name: opentelemetry-product
+      namespace: openshift-opentelemetry-operator
+      source: redhat-operators
+      sourceNamespace: openshift-marketplace
+      startingCSV: opentelemetry-operator.v0.127.0-1
   managedClusterGroups:
     exampleRegion:
       name: group-one
