@@ -25,7 +25,7 @@ clusterGroup:
     acm:
       name: advanced-cluster-management
       namespace: open-cluster-management
-      channel: release-2.16
+      channel: release-2.14
       #csv: advanced-cluster-management.v2.6.1
     opentelemetry:   #tip: manually install first, and then search "sub" and find the data in yaml
       channel: stable
